@@ -53,7 +53,7 @@ With a resulting dashboard ui of:
 
 This flow can be found in [docs](/docs/node-red.json)
 
-Other observationsr: ADC, GPIO16, and GPIO2 appear to be unused on the
+Other observations: ADC, GPIO16, and GPIO2 appear to be unused on the
 device, potentially allowing the addition of an analog temperature
 sensor or various other devices, possibly including an I2C bus.
 
