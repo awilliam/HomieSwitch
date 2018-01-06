@@ -1,0 +1,1299 @@
+[
+  {
+    "id": "a0cb3b36.0d0d28",
+    "type": "ui_text_input",
+    "z": "e7138639.82a118",
+    "name": "Calibrate",
+    "label": "Calibrate (Voltage,Current,Power)",
+    "group": "81b535ed.07be68",
+    "order": 16,
+    "width": "8",
+    "height": "1",
+    "passthru": false,
+    "mode": "text",
+    "delay": "0",
+    "topic": "homie\/kmc-smart-plug-01\/settings\/calibrate\/set",
+    "x": 890,
+    "y": 50,
+    "wires": [
+      [
+        "e9a0b0ca.a85ad"
+      ]
+    ]
+  },
+  {
+    "id": "ed7c4ec1.ce79",
+    "type": "ui_switch",
+    "z": "e7138639.82a118",
+    "name": "",
+    "label": "Power switch",
+    "group": "81b535ed.07be68",
+    "order": 1,
+    "width": "3",
+    "height": "1",
+    "passthru": false,
+    "decouple": "true",
+    "topic": "",
+    "style": "",
+    "onvalue": "on",
+    "onvalueType": "str",
+    "onicon": "",
+    "oncolor": "",
+    "offvalue": "off",
+    "offvalueType": "str",
+    "officon": "",
+    "offcolor": "",
+    "x": 480,
+    "y": 180,
+    "wires": [
+      [
+        "8e35a306.3f665"
+      ]
+    ]
+  },
+  {
+    "id": "5f84b189.55f22",
+    "type": "mqtt in",
+    "z": "e7138639.82a118",
+    "name": "",
+    "topic": "homie\/kmc-smart-plug-01\/control\/state",
+    "qos": "0",
+    "broker": "c816c540.450f98",
+    "x": 220,
+    "y": 180,
+    "wires": [
+      [
+        "ed7c4ec1.ce79"
+      ]
+    ]
+  },
+  {
+    "id": "d442a15a.ee7d5",
+    "type": "mqtt in",
+    "z": "e7138639.82a118",
+    "name": "",
+    "topic": "homie\/kmc-smart-plug-01\/monitor\/V",
+    "qos": "0",
+    "broker": "c816c540.450f98",
+    "x": 210,
+    "y": 480,
+    "wires": [
+      [
+        "89a8df8d.3e1b4"
+      ]
+    ]
+  },
+  {
+    "id": "89a8df8d.3e1b4",
+    "type": "ui_gauge",
+    "z": "e7138639.82a118",
+    "name": "",
+    "group": "81b535ed.07be68",
+    "order": 6,
+    "width": "2",
+    "height": "2",
+    "gtype": "gage",
+    "title": "Voltage",
+    "label": "Volts",
+    "format": "{{value}}",
+    "min": "0",
+    "max": "150",
+    "colors": [
+      "#e6e600",
+      "#00b500",
+      "#ca3838"
+    ],
+    "seg1": "110",
+    "seg2": "130",
+    "x": 450,
+    "y": 480,
+    "wires": [
+      
+    ]
+  },
+  {
+    "id": "776c6130.130ed",
+    "type": "mqtt in",
+    "z": "e7138639.82a118",
+    "name": "",
+    "topic": "homie\/kmc-smart-plug-01\/monitor\/W",
+    "qos": "0",
+    "broker": "c816c540.450f98",
+    "x": 210,
+    "y": 600,
+    "wires": [
+      [
+        "7a3abc81.903814",
+        "7ba20ea1.cef89"
+      ]
+    ]
+  },
+  {
+    "id": "7a3abc81.903814",
+    "type": "ui_gauge",
+    "z": "e7138639.82a118",
+    "name": "",
+    "group": "81b535ed.07be68",
+    "order": 8,
+    "width": "2",
+    "height": "2",
+    "gtype": "gage",
+    "title": "Power",
+    "label": "Watts",
+    "format": "{{value}}",
+    "min": "0",
+    "max": "1200",
+    "colors": [
+      "#00b500",
+      "#e6e600",
+      "#ca3838"
+    ],
+    "seg1": "800",
+    "seg2": "1000",
+    "x": 440,
+    "y": 580,
+    "wires": [
+      
+    ]
+  },
+  {
+    "id": "5e51e766.18d7d8",
+    "type": "mqtt in",
+    "z": "e7138639.82a118",
+    "name": "",
+    "topic": "homie\/kmc-smart-plug-01\/monitor\/A",
+    "qos": "0",
+    "broker": "c816c540.450f98",
+    "x": 210,
+    "y": 540,
+    "wires": [
+      [
+        "f8191fb6.58d85"
+      ]
+    ]
+  },
+  {
+    "id": "f8191fb6.58d85",
+    "type": "ui_gauge",
+    "z": "e7138639.82a118",
+    "name": "",
+    "group": "81b535ed.07be68",
+    "order": 7,
+    "width": "2",
+    "height": "2",
+    "gtype": "gage",
+    "title": "Current",
+    "label": "Amps",
+    "format": "{{value}}",
+    "min": "0",
+    "max": "10",
+    "colors": [
+      "#00b500",
+      "#e6e600",
+      "#ca3838"
+    ],
+    "seg1": "8",
+    "seg2": "9",
+    "x": 450,
+    "y": 540,
+    "wires": [
+      
+    ]
+  },
+  {
+    "id": "7fe4a95a.a7c0d8",
+    "type": "ui_text",
+    "z": "e7138639.82a118",
+    "group": "81b535ed.07be68",
+    "order": 9,
+    "width": "2",
+    "height": "1",
+    "name": "Energy",
+    "label": "{{msg.payload}}",
+    "format": "{{msg.topic}}",
+    "layout": "col-center",
+    "x": 570,
+    "y": 660,
+    "wires": [
+      
+    ]
+  },
+  {
+    "id": "acbe442a.b9b948",
+    "type": "mqtt in",
+    "z": "e7138639.82a118",
+    "name": "",
+    "topic": "homie\/kmc-smart-plug-01\/monitor\/Ws",
+    "qos": "0",
+    "broker": "c816c540.450f98",
+    "x": 220,
+    "y": 660,
+    "wires": [
+      [
+        "7ed26ef9.1662d"
+      ]
+    ]
+  },
+  {
+    "id": "7ed26ef9.1662d",
+    "type": "function",
+    "z": "e7138639.82a118",
+    "name": "",
+    "func": "msg.topic = \"Ws\";\nif (msg.payload > 60) {\n    msg.payload \/= 60;\n    msg.topic = \"Wm\";\n}\nif (msg.payload > 60) {\n    msg.payload \/= 60;\n    msg.topic = \"Wh\";\n    \n    if (msg.payload > 1000) {\n        msg.payload \/= 1000;\n        msg.topic = \"kWh\";\n    }\n}\n\nmsg.payload = parseFloat(msg.payload).toFixed(1);\n\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 440,
+    "y": 660,
+    "wires": [
+      [
+        "7fe4a95a.a7c0d8"
+      ]
+    ]
+  },
+  {
+    "id": "7e95e9ec.3469f8",
+    "type": "sunrise",
+    "z": "e7138639.82a118",
+    "name": "",
+    "lat": "40.5308",
+    "lon": "-105.02741",
+    "start": "dawn",
+    "end": "sunset",
+    "x": 140,
+    "y": 260,
+    "wires": [
+      [
+        "85c48204.7de47"
+      ],
+      [
+        
+      ]
+    ]
+  },
+  {
+    "id": "bddd6cd9.d9ef6",
+    "type": "switch",
+    "z": "e7138639.82a118",
+    "name": "on\/off",
+    "property": "payload",
+    "propertyType": "msg",
+    "rules": [
+      {
+        "t": "eq",
+        "v": "on",
+        "vt": "str"
+      },
+      {
+        "t": "eq",
+        "v": "off",
+        "vt": "str"
+      }
+    ],
+    "checkall": "true",
+    "outputs": 2,
+    "x": 620,
+    "y": 220,
+    "wires": [
+      [
+        "8e35a306.3f665"
+      ],
+      [
+        "793f342d.5bf3ec",
+        "1f4d3c3c.dcdef4"
+      ]
+    ]
+  },
+  {
+    "id": "e9a0b0ca.a85ad",
+    "type": "mqtt out",
+    "z": "e7138639.82a118",
+    "name": "",
+    "topic": "",
+    "qos": "",
+    "retain": "",
+    "broker": "c816c540.450f98",
+    "x": 1030,
+    "y": 130,
+    "wires": [
+      
+    ]
+  },
+  {
+    "id": "530888b4.bb8c78",
+    "type": "delay",
+    "z": "e7138639.82a118",
+    "name": "delay",
+    "pauseType": "delay",
+    "timeout": "250",
+    "timeoutUnits": "milliseconds",
+    "rate": "1",
+    "nbRateUnits": "1",
+    "rateUnits": "second",
+    "randomFirst": "1",
+    "randomLast": "5",
+    "randomUnits": "seconds",
+    "drop": false,
+    "x": 860,
+    "y": 280,
+    "wires": [
+      [
+        "8e35a306.3f665"
+      ]
+    ]
+  },
+  {
+    "id": "7b1e3e88.99a79",
+    "type": "change",
+    "z": "e7138639.82a118",
+    "name": "retained",
+    "rules": [
+      {
+        "t": "set",
+        "p": "retain",
+        "pt": "msg",
+        "to": "true",
+        "tot": "bool"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 560,
+    "y": 290,
+    "wires": [
+      [
+        "bddd6cd9.d9ef6"
+      ]
+    ]
+  },
+  {
+    "id": "793f342d.5bf3ec",
+    "type": "change",
+    "z": "e7138639.82a118",
+    "name": "!retained",
+    "rules": [
+      {
+        "t": "set",
+        "p": "retain",
+        "pt": "msg",
+        "to": "false",
+        "tot": "bool"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 730,
+    "y": 280,
+    "wires": [
+      [
+        "530888b4.bb8c78"
+      ]
+    ]
+  },
+  {
+    "id": "d5054856.0b6558",
+    "type": "rbe",
+    "z": "e7138639.82a118",
+    "name": "",
+    "func": "rbe",
+    "gap": "",
+    "start": "",
+    "inout": "out",
+    "x": 450,
+    "y": 250,
+    "wires": [
+      [
+        "7b1e3e88.99a79"
+      ]
+    ]
+  },
+  {
+    "id": "d63171be.86a94",
+    "type": "function",
+    "z": "e7138639.82a118",
+    "name": "on\/off",
+    "func": "if (msg.payload === 0)\n    msg.payload = \"on\";\nelse\n    msg.payload = \"off\";\n    \nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 330,
+    "y": 280,
+    "wires": [
+      [
+        "d5054856.0b6558"
+      ]
+    ]
+  },
+  {
+    "id": "8e35a306.3f665",
+    "type": "change",
+    "z": "e7138639.82a118",
+    "name": "topic",
+    "rules": [
+      {
+        "t": "set",
+        "p": "topic",
+        "pt": "msg",
+        "to": "homie\/kmc-smart-plug-01\/control\/state\/set",
+        "tot": "str"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 860,
+    "y": 160,
+    "wires": [
+      [
+        "e9a0b0ca.a85ad"
+      ]
+    ]
+  },
+  {
+    "id": "1cc3334a.11368d",
+    "type": "inject",
+    "z": "e7138639.82a118",
+    "name": "off: ephemeral",
+    "topic": "",
+    "payload": "off",
+    "payloadType": "str",
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "x": 160,
+    "y": 140,
+    "wires": [
+      [
+        "8e35a306.3f665"
+      ]
+    ]
+  },
+  {
+    "id": "64f63a39.961c44",
+    "type": "inject",
+    "z": "e7138639.82a118",
+    "name": "on: ephemeral",
+    "topic": "",
+    "payload": "on",
+    "payloadType": "str",
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "x": 160,
+    "y": 100,
+    "wires": [
+      [
+        "8e35a306.3f665"
+      ]
+    ]
+  },
+  {
+    "id": "f7b9659f.dae1d8",
+    "type": "inject",
+    "z": "e7138639.82a118",
+    "name": "on: persistent",
+    "topic": "",
+    "payload": "on",
+    "payloadType": "str",
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "x": 160,
+    "y": 310,
+    "wires": [
+      [
+        "7b1e3e88.99a79"
+      ]
+    ]
+  },
+  {
+    "id": "84528167.66877",
+    "type": "inject",
+    "z": "e7138639.82a118",
+    "name": "off: persistent",
+    "topic": "",
+    "payload": "off",
+    "payloadType": "str",
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "x": 160,
+    "y": 350,
+    "wires": [
+      [
+        "7b1e3e88.99a79"
+      ]
+    ]
+  },
+  {
+    "id": "85c48204.7de47",
+    "type": "switch",
+    "z": "e7138639.82a118",
+    "name": "Enable",
+    "property": "nightlight",
+    "propertyType": "flow",
+    "rules": [
+      {
+        "t": "true"
+      }
+    ],
+    "checkall": "true",
+    "outputs": 1,
+    "x": 270,
+    "y": 220,
+    "wires": [
+      [
+        "d63171be.86a94"
+      ]
+    ]
+  },
+  {
+    "id": "e5fe07b6.3be8f8",
+    "type": "change",
+    "z": "e7138639.82a118",
+    "name": "",
+    "rules": [
+      {
+        "t": "set",
+        "p": "nightlight",
+        "pt": "flow",
+        "to": "payload",
+        "tot": "msg"
+      },
+      {
+        "t": "set",
+        "p": "topic",
+        "pt": "msg",
+        "to": "sun",
+        "tot": "str"
+      },
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "reset",
+        "tot": "str"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 870,
+    "y": 430,
+    "wires": [
+      [
+        "24cce4b1.bdbffc"
+      ]
+    ]
+  },
+  {
+    "id": "2029aa6f.f658e6",
+    "type": "ui_switch",
+    "z": "e7138639.82a118",
+    "name": "",
+    "label": "Night Light",
+    "group": "81b535ed.07be68",
+    "order": 5,
+    "width": "2",
+    "height": "1",
+    "passthru": true,
+    "decouple": "false",
+    "topic": "",
+    "style": "",
+    "onvalue": "true",
+    "onvalueType": "bool",
+    "onicon": "",
+    "oncolor": "",
+    "offvalue": "false",
+    "offvalueType": "bool",
+    "officon": "",
+    "offcolor": "",
+    "x": 680,
+    "y": 430,
+    "wires": [
+      [
+        "e5fe07b6.3be8f8",
+        "ffdde17f.97a59"
+      ]
+    ]
+  },
+  {
+    "id": "13d47f0e.890e31",
+    "type": "inject",
+    "z": "e7138639.82a118",
+    "name": "",
+    "topic": "Nightlight",
+    "payload": "true",
+    "payloadType": "bool",
+    "repeat": "",
+    "crontab": "",
+    "once": true,
+    "x": 170,
+    "y": 410,
+    "wires": [
+      [
+        "841b58ff.d658b8"
+      ]
+    ]
+  },
+  {
+    "id": "841b58ff.d658b8",
+    "type": "change",
+    "z": "e7138639.82a118",
+    "name": "",
+    "rules": [
+      {
+        "t": "set",
+        "p": "enabled",
+        "pt": "msg",
+        "to": "payload",
+        "tot": "msg"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 350,
+    "y": 410,
+    "wires": [
+      [
+        "6aabb75d.edcdf8"
+      ]
+    ]
+  },
+  {
+    "id": "1f4d3c3c.dcdef4",
+    "type": "change",
+    "z": "e7138639.82a118",
+    "name": "NULL",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "",
+        "tot": "str"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 780,
+    "y": 240,
+    "wires": [
+      [
+        "8e35a306.3f665"
+      ]
+    ]
+  },
+  {
+    "id": "6aabb75d.edcdf8",
+    "type": "switch",
+    "z": "e7138639.82a118",
+    "name": "False\/True",
+    "property": "payload",
+    "propertyType": "msg",
+    "rules": [
+      {
+        "t": "false"
+      },
+      {
+        "t": "true"
+      }
+    ],
+    "checkall": "true",
+    "outputs": 2,
+    "x": 420,
+    "y": 340,
+    "wires": [
+      [
+        "ab05cc1a.ea927",
+        "2029aa6f.f658e6"
+      ],
+      [
+        "7a3352d6.1a7b5c"
+      ]
+    ]
+  },
+  {
+    "id": "ab05cc1a.ea927",
+    "type": "change",
+    "z": "e7138639.82a118",
+    "name": "retained",
+    "rules": [
+      {
+        "t": "set",
+        "p": "retain",
+        "pt": "msg",
+        "to": "true",
+        "tot": "bool"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 1040,
+    "y": 340,
+    "wires": [
+      [
+        "a9fc49c7.d10908"
+      ]
+    ]
+  },
+  {
+    "id": "ffdde17f.97a59",
+    "type": "switch",
+    "z": "e7138639.82a118",
+    "name": "IsFalse",
+    "property": "payload",
+    "propertyType": "msg",
+    "rules": [
+      {
+        "t": "false"
+      }
+    ],
+    "checkall": "true",
+    "outputs": 1,
+    "x": 870,
+    "y": 380,
+    "wires": [
+      [
+        "ab05cc1a.ea927"
+      ]
+    ]
+  },
+  {
+    "id": "7a3352d6.1a7b5c",
+    "type": "change",
+    "z": "e7138639.82a118",
+    "name": "",
+    "rules": [
+      {
+        "t": "delete",
+        "p": "payload",
+        "pt": "msg"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 550,
+    "y": 380,
+    "wires": [
+      [
+        "2029aa6f.f658e6"
+      ]
+    ]
+  },
+  {
+    "id": "73d2b766.867228",
+    "type": "link in",
+    "z": "e7138639.82a118",
+    "name": "Reset",
+    "links": [
+      "24cce4b1.bdbffc"
+    ],
+    "x": 365,
+    "y": 220,
+    "wires": [
+      [
+        "d5054856.0b6558"
+      ]
+    ]
+  },
+  {
+    "id": "24cce4b1.bdbffc",
+    "type": "link out",
+    "z": "e7138639.82a118",
+    "name": "Reset",
+    "links": [
+      "73d2b766.867228"
+    ],
+    "x": 985,
+    "y": 430,
+    "wires": [
+      
+    ]
+  },
+  {
+    "id": "a9fc49c7.d10908",
+    "type": "link out",
+    "z": "e7138639.82a118",
+    "name": "NULL",
+    "links": [
+      "d66cf8ba.bbe908"
+    ],
+    "x": 1135,
+    "y": 340,
+    "wires": [
+      
+    ]
+  },
+  {
+    "id": "d66cf8ba.bbe908",
+    "type": "link in",
+    "z": "e7138639.82a118",
+    "name": "",
+    "links": [
+      "a9fc49c7.d10908"
+    ],
+    "x": 695,
+    "y": 190,
+    "wires": [
+      [
+        "1f4d3c3c.dcdef4"
+      ]
+    ]
+  },
+  {
+    "id": "edf02b75.837d98",
+    "type": "ui_button",
+    "z": "e7138639.82a118",
+    "name": "",
+    "group": "81b535ed.07be68",
+    "order": 10,
+    "width": "2",
+    "height": "1",
+    "passthru": false,
+    "label": "Reset",
+    "color": "",
+    "bgcolor": "",
+    "icon": "",
+    "payload": "true",
+    "payloadType": "bool",
+    "topic": "homie\/kmc-smart-plug-01\/settings\/stats-reset\/set",
+    "x": 880,
+    "y": 90,
+    "wires": [
+      [
+        "e9a0b0ca.a85ad"
+      ]
+    ]
+  },
+  {
+    "id": "ca02deef.ee0ad",
+    "type": "ui_text",
+    "z": "e7138639.82a118",
+    "group": "81b535ed.07be68",
+    "order": 2,
+    "width": "1",
+    "height": "1",
+    "name": "blank",
+    "label": "",
+    "format": "",
+    "layout": "row-spread",
+    "x": 1030,
+    "y": 240,
+    "wires": [
+      
+    ]
+  },
+  {
+    "id": "77314793.3de2c8",
+    "type": "ui_text",
+    "z": "e7138639.82a118",
+    "group": "81b535ed.07be68",
+    "order": 3,
+    "width": "1",
+    "height": "1",
+    "name": "blank",
+    "label": "",
+    "format": "",
+    "layout": "row-spread",
+    "x": 1030,
+    "y": 200,
+    "wires": [
+      
+    ]
+  },
+  {
+    "id": "1c6d9801.fb1568",
+    "type": "mqtt in",
+    "z": "e7138639.82a118",
+    "name": "",
+    "topic": "homie\/kmc-smart-plug-01\/settings\/calibrate",
+    "qos": "0",
+    "broker": "c816c540.450f98",
+    "x": 230,
+    "y": 50,
+    "wires": [
+      [
+        "a0cb3b36.0d0d28",
+        "2b695055.9ee6c"
+      ]
+    ]
+  },
+  {
+    "id": "d594ee4b.0cfd1",
+    "type": "ui_text",
+    "z": "e7138639.82a118",
+    "group": "81b535ed.07be68",
+    "order": 4,
+    "width": "1",
+    "height": "1",
+    "name": "blank",
+    "label": "",
+    "format": "",
+    "layout": "row-spread",
+    "x": 1030,
+    "y": 280,
+    "wires": [
+      
+    ]
+  },
+  {
+    "id": "4b0c8c03.f63d74",
+    "type": "delay",
+    "z": "e7138639.82a118",
+    "name": "",
+    "pauseType": "delay",
+    "timeout": "10",
+    "timeoutUnits": "seconds",
+    "rate": "1",
+    "nbRateUnits": "1",
+    "rateUnits": "second",
+    "randomFirst": "1",
+    "randomLast": "5",
+    "randomUnits": "seconds",
+    "drop": false,
+    "x": 750,
+    "y": 80,
+    "wires": [
+      [
+        "a0cb3b36.0d0d28"
+      ]
+    ]
+  },
+  {
+    "id": "2b695055.9ee6c",
+    "type": "switch",
+    "z": "e7138639.82a118",
+    "name": "",
+    "property": "payload",
+    "propertyType": "msg",
+    "rules": [
+      {
+        "t": "eq",
+        "v": "OK",
+        "vt": "str"
+      },
+      {
+        "t": "eq",
+        "v": "Reset",
+        "vt": "str"
+      }
+    ],
+    "checkall": "true",
+    "outputs": 2,
+    "x": 440,
+    "y": 80,
+    "wires": [
+      [
+        "28590d7b.85b912"
+      ],
+      [
+        "28590d7b.85b912"
+      ]
+    ]
+  },
+  {
+    "id": "28590d7b.85b912",
+    "type": "change",
+    "z": "e7138639.82a118",
+    "name": "",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "",
+        "tot": "str"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 590,
+    "y": 80,
+    "wires": [
+      [
+        "4b0c8c03.f63d74"
+      ]
+    ]
+  },
+  {
+    "id": "7ba20ea1.cef89",
+    "type": "ui_chart",
+    "z": "e7138639.82a118",
+    "name": "",
+    "group": "81b535ed.07be68",
+    "order": 11,
+    "width": "0",
+    "height": "0",
+    "label": "",
+    "chartType": "line",
+    "legend": "false",
+    "xformat": "auto",
+    "interpolate": "linear",
+    "nodata": "",
+    "dot": false,
+    "ymin": "0",
+    "ymax": "",
+    "removeOlder": 1,
+    "removeOlderPoints": "",
+    "removeOlderUnit": "604800",
+    "cutout": 0,
+    "useOneColor": false,
+    "colors": [
+      "#1f77b4",
+      "#aec7e8",
+      "#ff7f0e",
+      "#2ca02c",
+      "#98df8a",
+      "#d62728",
+      "#ff9896",
+      "#9467bd",
+      "#c5b0d5"
+    ],
+    "useOldStyle": false,
+    "x": 440,
+    "y": 620,
+    "wires": [
+      [
+        
+      ],
+      [
+        
+      ]
+    ]
+  },
+  {
+    "id": "1402d0e6.95df3f",
+    "type": "ui_slider",
+    "z": "e7138639.82a118",
+    "name": "",
+    "label": "",
+    "group": "81b535ed.07be68",
+    "order": 12,
+    "width": "3",
+    "height": "1",
+    "passthru": false,
+    "topic": "homie\/kmc-smart-plug-01\/settings\/on-reporting-interval\/set",
+    "min": "5",
+    "max": "60",
+    "step": "5",
+    "x": 970,
+    "y": 520,
+    "wires": [
+      [
+        "78a5b7cb.5e1708",
+        "fe25dbbd.1ba468"
+      ]
+    ]
+  },
+  {
+    "id": "23540c81.dcdf24",
+    "type": "link in",
+    "z": "e7138639.82a118",
+    "name": "MQTT",
+    "links": [
+      "80ba84.9a32a58"
+    ],
+    "x": 755,
+    "y": 130,
+    "wires": [
+      [
+        "e9a0b0ca.a85ad"
+      ]
+    ]
+  },
+  {
+    "id": "1ce6af97.61ba5",
+    "type": "mqtt in",
+    "z": "e7138639.82a118",
+    "name": "",
+    "topic": "homie\/kmc-smart-plug-01\/settings\/on-reporting-interval",
+    "qos": "2",
+    "broker": "c816c540.450f98",
+    "x": 730,
+    "y": 480,
+    "wires": [
+      [
+        "1402d0e6.95df3f",
+        "fe25dbbd.1ba468"
+      ]
+    ]
+  },
+  {
+    "id": "78a5b7cb.5e1708",
+    "type": "change",
+    "z": "e7138639.82a118",
+    "name": "retained",
+    "rules": [
+      {
+        "t": "set",
+        "p": "retain",
+        "pt": "msg",
+        "to": "true",
+        "tot": "bool"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 1120,
+    "y": 540,
+    "wires": [
+      [
+        "80ba84.9a32a58"
+      ]
+    ]
+  },
+  {
+    "id": "80ba84.9a32a58",
+    "type": "link out",
+    "z": "e7138639.82a118",
+    "name": "",
+    "links": [
+      "23540c81.dcdf24"
+    ],
+    "x": 1215,
+    "y": 540,
+    "wires": [
+      
+    ]
+  },
+  {
+    "id": "1fdb6705.417379",
+    "type": "ui_slider",
+    "z": "e7138639.82a118",
+    "name": "",
+    "label": "",
+    "group": "81b535ed.07be68",
+    "order": 14,
+    "width": "3",
+    "height": "1",
+    "passthru": false,
+    "topic": "homie\/kmc-smart-plug-01\/settings\/off-reporting-interval\/set",
+    "min": "5",
+    "max": "60",
+    "step": "5",
+    "x": 970,
+    "y": 600,
+    "wires": [
+      [
+        "78a5b7cb.5e1708",
+        "23a701be.7f2d9e"
+      ]
+    ]
+  },
+  {
+    "id": "fc863e32.bbb6a",
+    "type": "mqtt in",
+    "z": "e7138639.82a118",
+    "name": "",
+    "topic": "homie\/kmc-smart-plug-01\/settings\/off-reporting-interval\/s",
+    "qos": "2",
+    "broker": "c816c540.450f98",
+    "x": 730,
+    "y": 560,
+    "wires": [
+      [
+        "1fdb6705.417379",
+        "23a701be.7f2d9e"
+      ]
+    ]
+  },
+  {
+    "id": "fe25dbbd.1ba468",
+    "type": "ui_text",
+    "z": "e7138639.82a118",
+    "group": "81b535ed.07be68",
+    "order": 13,
+    "width": "1",
+    "height": "1",
+    "name": "",
+    "label": "on",
+    "format": "@{{msg.payload}}s",
+    "layout": "col-center",
+    "x": 1110,
+    "y": 500,
+    "wires": [
+      
+    ]
+  },
+  {
+    "id": "23a701be.7f2d9e",
+    "type": "ui_text",
+    "z": "e7138639.82a118",
+    "group": "81b535ed.07be68",
+    "order": 15,
+    "width": "1",
+    "height": "1",
+    "name": "",
+    "label": "off",
+    "format": "@{{msg.payload}}s",
+    "layout": "col-center",
+    "x": 1110,
+    "y": 580,
+    "wires": [
+      
+    ]
+  },
+  {
+    "id": "81b535ed.07be68",
+    "type": "ui_group",
+    "z": "e7138639.82a118",
+    "name": "Control",
+    "tab": "1e838b1d.c93a45",
+    "order": 6,
+    "disp": false,
+    "width": "8"
+  },
+  {
+    "id": "c816c540.450f98",
+    "type": "mqtt-broker",
+    "z": "",
+    "broker": "localhost",
+    "port": "1883",
+    "clientid": "",
+    "usetls": false,
+    "compatmode": true,
+    "keepalive": "60",
+    "cleansession": true,
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": "",
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": ""
+  },
+  {
+    "id": "1e838b1d.c93a45",
+    "type": "ui_tab",
+    "z": "e7138639.82a118",
+    "name": "kmc-smart-plug-01",
+    "icon": "dashboard",
+    "order": 1
+  }
+]

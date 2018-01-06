@@ -3,7 +3,7 @@ Note: All modifications to your device are at your own risk.
 This project makes use of the following libraries:
 
  * [homie-esp8266][1]
- * [Adruino HLW8012][2]
+ * [Arduino HLW8012][2]
 
 Please install them and any dependencies prior to using this project.
 
@@ -26,7 +26,7 @@ Configure the Arduino IDE as a Generic ESP8266 Module (enable esp
 modules support via the board manager), default settings are used
 with an SPIFFS config of 1M/128K (I used 115200 baud).  As this
 program uses SPIFFS data, you'll need to both upload the data
-files ([Tools-ESP8266 Sketch Data Upload])[4] and upload the program
+files ([Tools-ESP8266 Sketch Data Upload][4]) and upload the program
 to the device.  In order to enter programming mode, hold the
 button on the device (GPIO0) while applying power and release.
 This will need to be done once for each the data and the program.
@@ -42,7 +42,18 @@ python scripts provided in the homie-esp8266 library:
 # python ota_updater.py -l <MQTT server> -t "homie/" -i "<device name>" /tmp/arduino_build_xxxxxx/HomieSwitch.ino.bin
 ```
 
-Other observations, ADC, GPIO16, and GPIO2 appear to be unused on the
+For the backend, I use Moquitto MQTT server and node-red.  You can
+example node-red flow looks like this:
+
+![Flow](/docs/node-red-editor.png)
+
+With a resulting dashboard ui of:
+
+![UI](/docs/node-red-ui.jpg)
+
+This flow can be found in [docs](/docs/node-red.json)
+
+Other observationsr: ADC, GPIO16, and GPIO2 appear to be unused on the
 device, potentially allowing the addition of an analog temperature
 sensor or various other devices, possibly including an I2C bus.
 
