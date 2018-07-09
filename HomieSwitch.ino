@@ -1,5 +1,5 @@
 /*
- * KMC 70011 Smart Plug implementing Homie convention MQTT  
+ * KMC 70011/30130WB/30401WA Smart Plug implementing Homie convention MQTT
  * 
  * Copyright (C) 2018 by Alex Williamson <alex.l.williamson@gmail.com>
  *
@@ -20,9 +20,34 @@
 #include <Homie.h>
 #include <HLW8012.h>
 
-#define PIN_RELAY	14
-#define PIN_LED		13
+/* COMPILER SETTINGS: Board: Generic ESP8266 Module, 80MHz, 26MHz, 40MHz, 1M (128K SPIFFS) */
+
+/* Pick ONE, and only one */
+//#define KMC_4_OUTLET	// Supports KMC 30401WA
+#define KMC_1_OUTLET	// Supports KMC 70011, 30130WB
+
+#ifdef KMC_1_OUTLET
+#define FW_NAME		"aw-kmc-1port-switch"
+static uint8_t relays[] = { 14 };
 #define PIN_BUTTON	0
+#define PIN_LED		13
+#else
+#define FW_NAME		"aw-kmc-4port-switch"
+static uint8_t relays[] = { 15, 13, 14 };
+#define PIN_BUTTON	16
+#define PIN_LED		1
+#endif
+
+#define FW_VERSION	"2.0.0"
+
+/* Required for binary detection in homie-ota */
+const char *__FLAGGED_FW_NAME = "\xbf\x84\xe4\x13\x54" FW_NAME "\x93\x44\x6b\xa7\x75";
+const char *__FLAGGED_FW_VERSION = "\x6a\x3f\x3e\x0e\xe1" FW_VERSION "\xb0\x30\x48\xd4\x1a";
+
+static uint8_t num_relays = sizeof(relays) / sizeof(relays[0]);
+
+#define LED_ON		LOW
+
 #define PIN_HLW_CF	4
 #define PIN_HLW_CF1	5
 #define PIN_HLW_SEL	12
@@ -41,39 +66,43 @@ static HomieNode settingsNode("settings", "configuration");
 
 static HLW8012 hlw8012;
 
-/*
- * Report data every 10s when on, 60s when off, can be modified via MQTT
- */
-#define OFF_REPORT_INTERVAL	( 60 * 1000 )
-#define ON_REPORT_INTERVAL	( 10 * 1000 )
+#define REPORT_INTERVAL	( 60 * 1000 )
 
-static unsigned long off_report_interval = OFF_REPORT_INTERVAL;
-static unsigned long on_report_interval = ON_REPORT_INTERVAL;
+#define BLINK_ON_INTERVAL	250
+#define BLINK_OFF_INTERVAL	500
+#define BLINK_END_INTERVAL	( 1 * 1000 )
+#define BLINK_TIMEOUT		( 15 * 1000 )
 
 static unsigned long last_report;
-static unsigned report_interval;
 
-static bool switch_state;
 static bool ota_in_progress = false;
 
-static void setPower(bool on)
-{
-	digitalWrite(PIN_RELAY, on ? HIGH : LOW);
-	digitalWrite(PIN_LED, on ? LOW : HIGH);
-	switch_state = on;
-	controlNode.setProperty("state").setRetained(true).send(on ? "on" : "off");
-	Homie.getLogger() << "Swtich state is " << (on ? "on" : "off") << endl;
-
-	report_interval = on ? on_report_interval : off_report_interval;
-	last_report = millis() - report_interval + 2000; /* update report 2s from now */
-}
+static uint8_t switch_state = 0;
 
 static bool stateHandler(HomieRange range, String value)
 {
+	if (!range.isRange)
+		return false;
+
+	if (range.index < 1 || range.index > num_relays)
+		return false;
+
 	if (value != "on" && value != "off")
 		return false;
 
-	setPower(value == "on");
+	if (value == "on") {
+		digitalWrite(relays[range.index - 1], HIGH);
+		switch_state |= (1 << (range.index - 1));
+		if (num_relays == 1)
+			digitalWrite(PIN_LED, LED_ON);
+	} else {
+		digitalWrite(relays[range.index - 1], LOW);
+		switch_state &= (~(1 << (range.index - 1)));
+		if (num_relays == 1)
+			digitalWrite(PIN_LED, !LED_ON);
+	}
+
+	controlNode.setProperty("state").setRange(range).send(value);
 	return true;
 }
 
@@ -86,9 +115,12 @@ static void buttonHandler(void)
 	static unsigned long buttonDownTime = 0;
 	static byte lastButtonState = HIGH;
 	static bool buttonPressHandled = false;
+	static uint8_t blinkMode = 0, blinkStatus = 0;
+	static unsigned long blinkTime = 0;
+	static unsigned long blinkTimeout = 0;
 
 	byte buttonState = digitalRead(PIN_BUTTON);
-	
+
 	if (buttonState != lastButtonState) {
 		if (buttonState == LOW) {
 			buttonDownTime = millis();
@@ -96,34 +128,59 @@ static void buttonHandler(void)
 		} else if (!buttonPressHandled) {
 			unsigned long dt = millis() - buttonDownTime;
 			if (dt >= 90 && dt <= 900) {
-				setPower(!switch_state);
+				if (num_relays > 1) {
+					blinkMode++;
+					if (blinkMode > num_relays)
+						blinkMode = 0;
+
+					blinkStatus = blinkMode * 2;
+					blinkTime = 0;
+				} else {
+					HomieRange range = { .isRange = true, range.index = 1 };
+					stateHandler(range, switch_state ? "off" : "on");
+				}
+
+				buttonPressHandled = true;
+			} else if (num_relays > 1 && dt > 900 && dt <= 5000) {
+				HomieRange range = { .isRange = true, range.index = blinkMode };
+				stateHandler(range, switch_state & (1 << (blinkMode - 1)) ? "off" : "on");
+				blinkMode = 0;
+				digitalWrite(PIN_LED, LED_ON);
+
 				buttonPressHandled = true;
 			}
+
+			blinkTimeout = millis();
 		}
+
 		lastButtonState = buttonState;
-	}	
+	}
+
+	if (blinkMode) {
+		if (millis() - blinkTimeout > BLINK_TIMEOUT) {
+			blinkMode = 0;
+			digitalWrite(PIN_LED, LED_ON);
+		} else if (!blinkTime || (millis() - blinkTime > (blinkStatus ? (blinkStatus & 0x1 ? BLINK_ON_INTERVAL : BLINK_ON_INTERVAL) : BLINK_END_INTERVAL))) {
+			if (!blinkStatus)
+				blinkStatus = blinkMode * 2;
+			else
+				blinkStatus--;
+
+			digitalWrite(PIN_LED, blinkStatus & 1 ? LED_ON : !LED_ON);
+			blinkTime = millis();
+		}
+	}
 }
 
 static void monitorHandler(void)
 {
-	if (millis() - last_report > report_interval) {
+	if (millis() - last_report > REPORT_INTERVAL) {
 		monitorNode.setProperty("V").setRetained(false).send(String(hlw8012.getVoltage(), DEC));
-		Homie.getLogger() << "Voltage: " << String(hlw8012.getVoltage(), DEC) << "V" << endl;
-
-		monitorNode.setProperty("A").setRetained(false).send(String(hlw8012.getCurrent(), 3));
-		Homie.getLogger() << "Current: " << String(hlw8012.getCurrent(), 3) << "A" << endl;
-
-		monitorNode.setProperty("W").setRetained(false).send(String(hlw8012.getActivePower(), DEC));
-		Homie.getLogger() << "Active Power: " << String(hlw8012.getActivePower(), DEC) << "W" << endl;
-
-		monitorNode.setProperty("VA").setRetained(false).send(String(hlw8012.getApparentPower(), DEC));
-		Homie.getLogger() << "Apparent Power: " << String(hlw8012.getApparentPower(), DEC) << "VA" << endl;
-
-		monitorNode.setProperty("pf").setRetained(false).send(String(100 * hlw8012.getPowerFactor(), 1));
-		Homie.getLogger() << "Power Factor: " << String(100 * hlw8012.getPowerFactor(), 1) << "%" << endl;
-
+		monitorNode.setProperty("A").setRetained(false).send(String(switch_state ? hlw8012.getCurrent() : 0.0, 3));
+		monitorNode.setProperty("W").setRetained(false).send(String(switch_state ? hlw8012.getActivePower() : 0, DEC));
+		monitorNode.setProperty("VA").setRetained(false).send(String(switch_state ? hlw8012.getApparentPower() : 0, DEC));
+		monitorNode.setProperty("pf").setRetained(false).send(String(100 * (switch_state ? hlw8012.getPowerFactor() : 1.0), 1));
 		monitorNode.setProperty("Ws").setRetained(false).send(String(hlw8012.getEnergy(), DEC));
-		Homie.getLogger() << "Aggregate Energy: " << String(hlw8012.getEnergy(), DEC) << "Ws" << endl;
 
 		last_report = millis();
 	}
@@ -208,55 +265,6 @@ static bool multipliersHandler(HomieRange range, String value)
 	return true;
 }
 
-/*
- * The HLW8012 code seems to suggest a lower bound of 2s reporting, a value < 0 resets to defaults.  It's
- * expected that setting these intervals will be done using retained MQTT messages such that they are
- * reloaded after subscription.  These values are not stored on the device.
- */
-static bool onintervalHandler(HomieRange range, String value)
-{
-	int val = value.toInt();
-	
-	if (val < 0) {
-		on_report_interval = ON_REPORT_INTERVAL;
-	} else {
-		if (val < 2)
-			val = 2;
-
-		on_report_interval = val * 1000;
-	}
-
-	if (switch_state) {
-		report_interval = on_report_interval;
-		last_report = millis();
-	}
-
-	settingsNode.setProperty("on-reporting-interval").send(String(on_report_interval/1000, DEC));
-	return true;
-}
-
-static bool offintervalHandler(HomieRange range, String value)
-{
-	int val = value.toInt();
-	
-	if (val < 0) {
-		off_report_interval = OFF_REPORT_INTERVAL;
-	} else {
-		if (val < 2)
-			val = 2;
-
-		off_report_interval = val * 1000;
-	}
-
-	if (!switch_state) {
-		report_interval = off_report_interval;
-		last_report = millis();
-	}
-
-	settingsNode.setProperty("off-reorting-interval").send(String(off_report_interval/1000, DEC));
-	return true;
-}
-
 static void ICACHE_RAM_ATTR hlw8012_cf1_interrupt(void)
 {
 	hlw8012.cf1_interrupt();
@@ -284,8 +292,18 @@ static void setupHandler(void)
 	attachInterrupt(PIN_HLW_CF1, hlw8012_cf1_interrupt, CHANGE);
 	attachInterrupt(PIN_HLW_CF, hlw8012_cf_interrupt, CHANGE);
 
-	/* A retained MQTT message can turn us "on" if that's the desired default state */
-	setPower(false);
+	/*
+	 * With multiple outlets, the LED indicates power to the module, with a single outlet the LED
+	 * indicates the power state of the outlet.
+	 */
+	digitalWrite(PIN_LED, num_relays == 1 ? !LED_ON : LED_ON);
+
+	monitorNode.setProperty("V").setRetained(false).send(String(0, DEC));
+	monitorNode.setProperty("A").setRetained(false).send(String(0.0, 3));
+	monitorNode.setProperty("W").setRetained(false).send(String(0, DEC));
+	monitorNode.setProperty("VA").setRetained(false).send(String(0, DEC));
+	monitorNode.setProperty("pf").setRetained(false).send(String(100.0, 1));
+	monitorNode.setProperty("Ws").setRetained(false).send(String(0, DEC));
 }
 
 void onHomieEvent(const HomieEvent& event) {
@@ -326,22 +344,27 @@ void onHomieEvent(const HomieEvent& event) {
 
 void setup(void)
 {
-	Serial.begin(115200);
-	pinMode(PIN_BUTTON, INPUT);
-	pinMode(PIN_RELAY, OUTPUT);
-	digitalWrite(PIN_RELAY, LOW);
-	pinMode(PIN_LED, OUTPUT);
-	digitalWrite(PIN_LED, HIGH);
+	uint8_t i;
 
-	Homie_setFirmware("aw-hlw-switch", "1.0.0");
+	for (i = 0; i < num_relays; i++) {
+		pinMode(relays[i], OUTPUT);
+		digitalWrite(relays[i], LOW);
+	}
+
+	pinMode(PIN_LED, OUTPUT);
+	digitalWrite(PIN_LED, !LED_ON);
+
+	Homie_setFirmware(FW_NAME, FW_VERSION);
 	Homie_setBrand("HomieByAW");
-	/* Holding the button for 5s will cause the device to enter config mode */
-	Homie.setResetTrigger(PIN_BUTTON, LOW, 5000);
+	/* Holding the button for 10s will cause the device to enter config mode */
+	Homie.setResetTrigger(PIN_BUTTON, LOW, 10000);
 	Homie.setSetupFunction(setupHandler);
 	Homie.setLoopFunction(loopHandler);
 	Homie.onEvent(onHomieEvent);
+	Homie.disableLogging();
+	Homie.setLedPin(PIN_LED, LED_ON);
 
-	controlNode.advertise("state").settable(stateHandler);
+	controlNode.advertiseRange("state", 1, num_relays).settable(stateHandler);
 
 	monitorNode.advertise("V");
 	monitorNode.advertise("A");
@@ -353,8 +376,6 @@ void setup(void)
 	settingsNode.advertise("stats-reset").settable(statsHandler);
 	settingsNode.advertise("calibrate").settable(calibrateHandler);
 	settingsNode.advertise("multipliers").settable(multipliersHandler);
-	settingsNode.advertise("on-reporting-interval").settable(onintervalHandler);
-	settingsNode.advertise("off-reporting-interval").settable(offintervalHandler);
 
 	Homie.setup();
 }
