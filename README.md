@@ -83,7 +83,23 @@ PCB version as pictured on others.
 Note that while the electro-mechanical switch on all of these has a
 static power draw when the relay is turned "on" (~1W), only the KMC
 30130WB seems to have measurable power draw when the outlet is "off"
-(as measured via kill-a-watt).
+(as measured via kill-a-watt).  This is also the only device so far
+where I observe that there is no transformer as part of the DC power
+supply to the esp device.  The power transistor in this device gets
+notably warm to the touch any time the device is plugged in.  I would
+therefore disrecommend the KMC mini smart plug from my experience.
+I also found that the current rating and operating temperature ranges
+specified on the Amazon listings do not match that on the packaging
+(16A advertised vs 15A on packaging, -20 to +70C advertised, -10 to
++40C on packaging) for the recieved items (also true for the 4-port
+plug with three switched outlets).  I posted review comments on
+Amazon.com about these issues, but they were rejected or later
+removed.  In fact all of the review comments for the mini plug
+(B078H4XHBM) were suspiciously removed on or about July 10, 2018.
+In my personal opinion, it seems that Amazon is censoring reviews
+that discuss any sort of reprogramming of these devices, and I'm
+suspicious Amazon is not acting benevolently in regards to reviews
+for certain vendors, including KMC.
 
 For the single port outlets, I've configured the button to toggle the
 switch.  Holding for 10s will enter configuration mode in Homie.  For
