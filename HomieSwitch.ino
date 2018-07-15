@@ -1,5 +1,5 @@
 /*
- * KMC 70011/30130WB/30401WA Smart Plug implementing Homie convention MQTT
+ * Smart Plug, Multi-outlet, and Power Strips implementing Homie convention MQTT
  * 
  * Copyright (C) 2018 by Alex Williamson <alex.l.williamson@gmail.com>
  *
@@ -23,22 +23,42 @@
 /* COMPILER SETTINGS: Board: Generic ESP8266 Module, 80MHz, 26MHz, 40MHz, 1M (128K SPIFFS) */
 
 /* Pick ONE, and only one */
-//#define KMC_4_OUTLET	// Supports KMC 30401WA
-#define KMC_1_OUTLET	// Supports KMC 70011, 30130WB
+//#define KMC_1_OUTLET	// Supports KMC 70011, 30130WB
+//#define KMC_4_OUTLET	// Supports KMC 30401WA (3 switched outlets, 1 always on)
+#define KMC_POWER_STRIP	// Supports KMC 20405/20406/20504-1406WA (4 switched outlets, switch USB charger, optional always on outlet)
 
-#ifdef KMC_1_OUTLET
+#if defined KMC_1_OUTLET
 #define FW_NAME		"aw-kmc-1port-switch"
 static uint8_t relays[] = { 14 };
 #define PIN_BUTTON	0
 #define PIN_LED		13
-#else
+#define LED_ON		LOW
+#define HAS_HLW		// Has power monitoring
+#define PIN_HLW_CF	4
+#define PIN_HLW_CF1	5
+#define PIN_HLW_SEL	12
+
+#elif defined KMC_4_OUTLET
 #define FW_NAME		"aw-kmc-4port-switch"
-static uint8_t relays[] = { 15, 13, 14 };
+static uint8_t relays[] = { 15, 13, 14 };	// 1, 2, 3
 #define PIN_BUTTON	16
 #define PIN_LED		1
+#define LED_ON		LOW
+#define HAS_HLW		// Has power monitor (shared for all switched outlets)
+#define PIN_HLW_CF	4
+#define PIN_HLW_CF1	5
+#define PIN_HLW_SEL	12
+
+#elif defined KMC_POWER_STRIP
+#define FW_NAME		"aw-kmc-power-strip"
+static uint8_t relays[] = { 13, 12, 14, 16, 4 };	// 1, 2, 3, 4, USB
+#define PIN_BUTTON	5
+#define PIN_LED		0
+#define LED_ON		LOW
+// No power monitoring
 #endif
 
-#define FW_VERSION	"2.0.0"
+#define FW_VERSION	"2.0.1"
 
 /* Required for binary detection in homie-ota */
 const char *__FLAGGED_FW_NAME = "\xbf\x84\xe4\x13\x54" FW_NAME "\x93\x44\x6b\xa7\x75";
@@ -46,12 +66,9 @@ const char *__FLAGGED_FW_VERSION = "\x6a\x3f\x3e\x0e\xe1" FW_VERSION "\xb0\x30\x
 
 static uint8_t num_relays = sizeof(relays) / sizeof(relays[0]);
 
-#define LED_ON		LOW
+static HomieNode controlNode("control", "switch");
 
-#define PIN_HLW_CF	4
-#define PIN_HLW_CF1	5
-#define PIN_HLW_SEL	12
-
+#ifdef HAS_HLW
 /*
  * Can't really locate or read these in-circuit, but these give relatively reasonable
  * values and can be improved using the calibration interface.
@@ -60,11 +77,11 @@ static uint8_t num_relays = sizeof(relays) / sizeof(relays[0]);
 #define VOLTAGE_RESISTOR_UPSTREAM       ( 2300000 )
 #define VOLTAGE_RESISTOR_DOWNSTREAM     ( 1000 )
 
-static HomieNode controlNode("control", "switch");
 static HomieNode monitorNode("monitor", "sensors");
 static HomieNode settingsNode("settings", "configuration");
 
 static HLW8012 hlw8012;
+#endif
 
 #define REPORT_INTERVAL	( 60 * 1000 )
 
@@ -81,28 +98,38 @@ static uint8_t switch_state = 0;
 
 static bool stateHandler(HomieRange range, String value)
 {
-	if (!range.isRange)
-		return false;
+	int index = 0;
 
-	if (range.index < 1 || range.index > num_relays)
-		return false;
+	if (num_relays > 1) {
+		if (!range.isRange)
+			return false;
+
+		if (range.index < 1 || range.index > num_relays)
+			return false;
+
+		index = range.index - 1;
+	}
 
 	if (value != "on" && value != "off")
 		return false;
 
 	if (value == "on") {
-		digitalWrite(relays[range.index - 1], HIGH);
-		switch_state |= (1 << (range.index - 1));
+		digitalWrite(relays[index], HIGH);
+		switch_state |= (1 << index);
 		if (num_relays == 1)
 			digitalWrite(PIN_LED, LED_ON);
 	} else {
-		digitalWrite(relays[range.index - 1], LOW);
-		switch_state &= (~(1 << (range.index - 1)));
+		digitalWrite(relays[index], LOW);
+		switch_state &= (~(1 << index));
 		if (num_relays == 1)
 			digitalWrite(PIN_LED, !LED_ON);
 	}
 
-	controlNode.setProperty("state").setRange(range).send(value);
+	if (num_relays > 1)
+		controlNode.setProperty("state").setRange(range).send(value);
+	else
+		controlNode.setProperty("state").send(value);
+
 	return true;
 }
 
@@ -172,6 +199,7 @@ static void buttonHandler(void)
 	}
 }
 
+#ifdef HAS_HLW
 static void monitorHandler(void)
 {
 	if (millis() - last_report > REPORT_INTERVAL) {
@@ -274,6 +302,7 @@ static void ICACHE_RAM_ATTR hlw8012_cf_interrupt(void)
 {
 	hlw8012.cf_interrupt();
 }
+#endif /* HAS_HLW */
 
 static void loopHandler(void)
 {
@@ -282,21 +311,18 @@ static void loopHandler(void)
 		return;
 
 	buttonHandler();
+#ifdef HAS_HLW
 	monitorHandler();
+#endif
 }
 
 static void setupHandler(void)
 {
+#ifdef HAS_HLW
 	hlw8012.begin(PIN_HLW_CF, PIN_HLW_CF1, PIN_HLW_SEL, HIGH, true);
 	hlw8012.setResistors(CURRENT_RESISTOR, VOLTAGE_RESISTOR_UPSTREAM, VOLTAGE_RESISTOR_DOWNSTREAM);
 	attachInterrupt(PIN_HLW_CF1, hlw8012_cf1_interrupt, CHANGE);
 	attachInterrupt(PIN_HLW_CF, hlw8012_cf_interrupt, CHANGE);
-
-	/*
-	 * With multiple outlets, the LED indicates power to the module, with a single outlet the LED
-	 * indicates the power state of the outlet.
-	 */
-	digitalWrite(PIN_LED, num_relays == 1 ? !LED_ON : LED_ON);
 
 	monitorNode.setProperty("V").setRetained(false).send(String(0, DEC));
 	monitorNode.setProperty("A").setRetained(false).send(String(0.0, 3));
@@ -304,6 +330,13 @@ static void setupHandler(void)
 	monitorNode.setProperty("VA").setRetained(false).send(String(0, DEC));
 	monitorNode.setProperty("pf").setRetained(false).send(String(100.0, 1));
 	monitorNode.setProperty("Ws").setRetained(false).send(String(0, DEC));
+#endif
+
+	/*
+	 * With multiple outlets, the LED indicates power to the module, with a single outlet the LED
+	 * indicates the power state of the outlet.
+	 */
+	digitalWrite(PIN_LED, num_relays == 1 ? !LED_ON : LED_ON);
 }
 
 void onHomieEvent(const HomieEvent& event) {
@@ -364,8 +397,12 @@ void setup(void)
 	Homie.disableLogging();
 	Homie.setLedPin(PIN_LED, LED_ON);
 
-	controlNode.advertiseRange("state", 1, num_relays).settable(stateHandler);
+	if (num_relays > 1)
+		controlNode.advertiseRange("state", 1, num_relays).settable(stateHandler);
+	else
+		controlNode.advertise("state").settable(stateHandler);
 
+#ifdef HAS_HLW
 	monitorNode.advertise("V");
 	monitorNode.advertise("A");
 	monitorNode.advertise("W");
@@ -376,6 +413,7 @@ void setup(void)
 	settingsNode.advertise("stats-reset").settable(statsHandler);
 	settingsNode.advertise("calibrate").settable(calibrateHandler);
 	settingsNode.advertise("multipliers").settable(multipliersHandler);
+#endif
 
 	Homie.setup();
 }
