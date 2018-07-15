@@ -7,9 +7,11 @@ This project makes use of the following libraries:
 
 Please install them and any dependencies prior to using this project.
 
-In order to program the KMC 70011/30130WB/30401WA Wifi Smart Plug, it's
-necessary to solder leads onto the esp8266 carrier (this device uses a
-[TYWE3S][3] version of the esp8266).  Use the following connections:
+In order to program the KMC 70011/30130WB/30401WA Wifi Smart Plug or
+KMC 20405/20406/20504-1406WA Wifi Smart Power strip, it's necessary to
+solder leads onto the esp8266 carrier (these device uses a [TYWE3S][3]
+version of the esp8266, except for the 20405 which uses an
+[ESP-12F][4]).  Use the following connections:
 
 KMC 70011:
 ![Wiring](/docs/wiring.jpg)
@@ -22,7 +24,14 @@ KMC 30401WA:
 ![4port-overview](/docs/4port-overview.jpg)
 ![4port-wiring](/docs/4port-wiring.jpg)
 
-The TYWE3S pinout is:
+KMC 20405:
+![20405-image](/docs/20405.jpg)
+
+KMC 20406:
+![20406-image](/docs/20406.jpg)
+
+If unclear from pictures, for all esp8266 carriers the pinout is the
+same.  Using the orientation showin for the 70011 device:
 
  * TXD0 (left, bottom-most pin when viewed as above, orange)
  * RXD0 (directly above TXD0, yellow)
@@ -33,22 +42,24 @@ Be sure your programming device uses 3.3V Vcc and signaling.
 
 Configure the Arduino IDE as a Generic ESP8266 Module (enable esp
 modules support via the board manager), default settings are used with
-an SPIFFS config of 1M/128K (I used 115200 baud).  As this program
-uses SPIFFS data, you'll need to both upload the data files
-([Tools-ESP8266 Sketch Data Upload][4]) and upload the program to the
-device.  Be sure to select either the 1-port or 4-port #define in the
-code before compiling.  In order to enter programming mode, hold the
-button on the device (GPIO0) while applying power and release.
-This will need to be done once for each the data and the program.
-
-Note that the 4-port module uses GPIO16 for the button, making it
-a bit more difficult to enter programming mode.  I used tweezers
-to bridge GPIO0 to ground while inserting the UART wiring harness
-into the USB FTDI adapter.  GPIO0 on the TYWE3S is the middle pin
-between the RX and ground connection, the third pin from either.
+an SPIFFS config of 1M/128K (I used 115200 baud).  The ESP-12F
+potentially has more flash, but we're not taking advantage of it, so
+the same settings are used even for that model.  As this program uses
+SPIFFS data, you'll need to both upload the data files
+([Tools-ESP8266 Sketch Data Upload][5]) and upload the program to the
+device.  Be sure to select either the 1-port, 4-port, or strip #define
+in the code before compiling.  In order to enter programming mode,
+GPIO0 needs to be held low when the device first receives power from
+the USB programming device.  For the 70011 and 30130WB Smart Plugs,
+this is simply a matter of holding the button on the device while
+inserting/attaching the programmer or leads.  For the other devices,
+I use a pair of tweezers to bridge GPIO0 to ground while applying
+power.  GPIO0 is middle pin between the GND pin and RXD0 pin, third
+pin from each.  This will need to be done once for each the data and
+the program.
 
 Note that while the SPIFFS data files fit within a 64K SPIFFS config,
-at the time of this writing, 128K is necessary for it to [work][5].
+at the time of this writing, 128K is necessary for it to [work][6].
 
 A nice feature of homie-esp8266 is that it supports "over the air"
 update using MQTT.  An example command line for this, using the
@@ -102,14 +113,23 @@ suspicious Amazon is not acting benevolently in regards to reviews
 for certain vendors, including KMC.
 
 For the single port outlets, I've configured the button to toggle the
-switch.  Holding for 10s will enter configuration mode in Homie.  For
-the 4-port outlet, the switch led is on when the module has power.  A
-momentary press increments through the outlets and the LED will blink
-to indicate the selected outlet.  A longer press (1-5s) will toggle
-the state of the selected outlet.  Selection will timeout after 15s.
+switch with the LED state matching the outlet state.  For the 4-port
+outlet and power strips, the switch led is on when the module has
+power.  A momentary press increments through the outlets and the LED
+will blink to indicate the selected outlet.  A longer press (1-5s)
+will toggle the state of the selected outlet.  Selection will timeout
+after 15s.  For all devices, holding for 10s will enter configuration
+mode in Homie.
+
+For Smart Power Strips, switch #5 controls the USB port.  The 20406
+strip does not have an LED to indicate USB power (though it does have
+unpopulated traces for it on the PCB), while the LED on the 20405 is
+powered via the USB supply itself, which can have significant lag
+turning on and off, the latter depending on the load on the USB ports.
 
 [1]:https://github.com/marvinroger/homie-esp8266
 [2]:https://bitbucket.org/xoseperez/hlw8012
 [3]:https://docs.tuya.com/en/hardware/WiFi-module/wifi-e3s-module.html
-[4]:http://esp8266.github.io/Arduino/versions/2.0.0/doc/filesystem.html#uploading-files-to-file-system
-[5]:https://github.com/marvinroger/homie-esp8266/issues/469
+[4]:https://www.elecrow.com/download/ESP-12F.pdf
+[5]:http://esp8266.github.io/Arduino/versions/2.0.0/doc/filesystem.html#uploading-files-to-file-system
+[6]:https://github.com/marvinroger/homie-esp8266/issues/469
