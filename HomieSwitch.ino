@@ -24,8 +24,9 @@
 
 /* Pick ONE, and only one */
 //#define KMC_1_OUTLET	// Supports KMC 70011, 30130WB
+//#define HAUSBELL_1_OUTLET	// Supports HausBell SM-PW701U
 //#define KMC_4_OUTLET	// Supports KMC 30401WA (3 switched outlets, 1 always on)
-#define KMC_POWER_STRIP	// Supports KMC 20405/20406/20504-1406WA (4 switched outlets, switch USB charger, optional always on outlet)
+//#define KMC_POWER_STRIP	// Supports KMC 20405/20406/20504-1406WA (4 switched outlets, switch USB charger, optional always on outlet)
 
 #if defined KMC_1_OUTLET
 #define FW_NAME		"aw-kmc-1port-switch"
@@ -37,6 +38,14 @@ static uint8_t relays[] = { 14 };
 #define PIN_HLW_CF	4
 #define PIN_HLW_CF1	5
 #define PIN_HLW_SEL	12
+
+#elif defined HAUSBELL_1_OUTLET
+#define FW_NAME		"aw-hb-1port-switch"
+static uint8_t relays[] = { 12 };
+#define PIN_BUTTON	13
+#define PIN_LED		4
+#define LED_ON		LOW
+#define AUTO_RELAY_LED
 
 #elif defined KMC_4_OUTLET
 #define FW_NAME		"aw-kmc-4port-switch"
@@ -56,6 +65,9 @@ static uint8_t relays[] = { 13, 12, 14, 16, 4 };	// 1, 2, 3, 4, USB
 #define PIN_LED		0
 #define LED_ON		LOW
 // No power monitoring
+
+#else
+#error "No board defined"
 #endif
 
 #define FW_VERSION	"2.0.1"
@@ -65,6 +77,12 @@ const char *__FLAGGED_FW_NAME = "\xbf\x84\xe4\x13\x54" FW_NAME "\x93\x44\x6b\xa7
 const char *__FLAGGED_FW_VERSION = "\x6a\x3f\x3e\x0e\xe1" FW_VERSION "\xb0\x30\x48\xd4\x1a";
 
 static uint8_t num_relays = sizeof(relays) / sizeof(relays[0]);
+
+#ifdef AUTO_RELAY_LED
+bool toggle_led = false;
+#else
+bool toggle_led = (num_relays == 1);
+#endif
 
 static HomieNode controlNode("control", "switch");
 
@@ -81,6 +99,7 @@ static HomieNode monitorNode("monitor", "sensors");
 static HomieNode settingsNode("settings", "configuration");
 
 static HLW8012 hlw8012;
+static unsigned long last_report;
 #endif
 
 #define REPORT_INTERVAL	( 60 * 1000 )
@@ -89,8 +108,6 @@ static HLW8012 hlw8012;
 #define BLINK_OFF_INTERVAL	500
 #define BLINK_END_INTERVAL	( 1 * 1000 )
 #define BLINK_TIMEOUT		( 15 * 1000 )
-
-static unsigned long last_report;
 
 static bool ota_in_progress = false;
 
@@ -116,12 +133,12 @@ static bool stateHandler(HomieRange range, String value)
 	if (value == "on") {
 		digitalWrite(relays[index], HIGH);
 		switch_state |= (1 << index);
-		if (num_relays == 1)
+		if (toggle_led)
 			digitalWrite(PIN_LED, LED_ON);
 	} else {
 		digitalWrite(relays[index], LOW);
 		switch_state &= (~(1 << index));
-		if (num_relays == 1)
+		if (toggle_led)
 			digitalWrite(PIN_LED, !LED_ON);
 	}
 
@@ -163,13 +180,13 @@ static void buttonHandler(void)
 					blinkStatus = blinkMode * 2;
 					blinkTime = 0;
 				} else {
-					HomieRange range = { .isRange = true, range.index = 1 };
+					HomieRange range = { .isRange = true, .index = 1 };
 					stateHandler(range, switch_state ? "off" : "on");
 				}
 
 				buttonPressHandled = true;
 			} else if (num_relays > 1 && dt > 900 && dt <= 5000) {
-				HomieRange range = { .isRange = true, range.index = blinkMode };
+				HomieRange range = { .isRange = true, .index = blinkMode };
 				stateHandler(range, switch_state & (1 << (blinkMode - 1)) ? "off" : "on");
 				blinkMode = 0;
 				digitalWrite(PIN_LED, LED_ON);
@@ -336,7 +353,7 @@ static void setupHandler(void)
 	 * With multiple outlets, the LED indicates power to the module, with a single outlet the LED
 	 * indicates the power state of the outlet.
 	 */
-	digitalWrite(PIN_LED, num_relays == 1 ? !LED_ON : LED_ON);
+	digitalWrite(PIN_LED, toggle_led ? !LED_ON : LED_ON);
 }
 
 void onHomieEvent(const HomieEvent& event) {

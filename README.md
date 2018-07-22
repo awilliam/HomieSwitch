@@ -30,6 +30,9 @@ KMC 20405:
 KMC 20406:
 ![20406-image](/docs/20406.jpg)
 
+HausBell SM-PW701U:
+![SM-PW701U-image](/docs/SM-PW701U.jpg)
+
 If unclear from pictures, for all esp8266 carriers the pinout is the
 same.  Using the orientation showin for the 70011 device:
 
@@ -126,6 +129,11 @@ strip does not have an LED to indicate USB power (though it does have
 unpopulated traces for it on the PCB), while the LED on the 20405 is
 powered via the USB supply itself, which can have significant lag
 turning on and off, the latter depending on the load on the USB ports.
+
+For the HausBell SM-PW701U the red LED is hardwired with the relay, so
+the blue LED is on to indicate power to the device.  There is no power
+meter in this device, but the interior shows notably better quality
+and the device is UL listed.
 
 [1]:https://github.com/marvinroger/homie-esp8266
 [2]:https://bitbucket.org/xoseperez/hlw8012
